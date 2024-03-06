@@ -1,7 +1,7 @@
 ## What is TidyTuesday?
 
 - `TidyTuesday` is a weekly project organized by the R4DS Online Learning Community.
-- Data is posted to social media every Monday morning, and participants dissect it.  
+- Data is posted to social media every Monday morning, and participants look into the data.  
 - All are encouraged to join and share their codes used to generate their results.
 
 ## Goals of TidyTuesday
