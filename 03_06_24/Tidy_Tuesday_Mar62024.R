@@ -1,0 +1,76 @@
+# Load the TidyTuesday data into R
+install.packages("tidytuesdayR")
+tuesdata <- tidytuesdayR::tt_load('2024-03-05')
+trashwheel <- tuesdata$trashwheel
+
+# Install required packages
+install.packages("ggplot2")
+install.packages("dplyr")
+install.packages("reshape2")
+install.packages("tidyr")
+
+# Load required packages 
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(reshape2)
+library(lubridate)
+
+# If any type of trash value is NA, replace it with 0
+trashwheel <- trashwheel %>%
+  mutate(across(c(PlasticBottles, Polystyrene, CigaretteButts, GlassBottles, PlasticBags, Wrappers, SportsBalls), 
+                ~replace_na(., 0)))
+
+# Three values of Month were NA, so use the date column to see which month they came from
+trashwheel <- trashwheel %>%
+  mutate(Month = case_when(
+    ID == "mister" & is.na(Month) ~ "September",
+    ID == "gwynnda" & is.na(Month) ~ "July",
+    TRUE ~ as.character(Month) # Keep existing Month values as they are
+  ))
+
+# Make sure 'Month' is a factor with correct levels after replacement
+trashwheel$Month <- factor(trashwheel$Month, levels = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))
+
+# Sum each type of trash across all Trash Wheels
+total_trash_collected <- trashwheel %>%
+  select(PlasticBottles, Polystyrene, CigaretteButts, GlassBottles, PlasticBags, Wrappers, SportsBalls) %>%
+  summarise_all(sum)
+
+# Melt the data for plotting
+total_trash_melted <- melt(total_trash_collected)
+
+# Plot the total different types of trash collected
+ggplot(total_trash_melted, aes(x = variable, y = value)) +
+  geom_bar(stat = "identity") +
+  xlab("Type of Trash") + ylab("Total Collected") +
+  ggtitle("Total Trash Collected of Each Type") +
+  scale_y_continuous(labels = scales::comma)
+
+# Sum of each trash type by Trash Wheel
+trash_by_wheel <- trashwheel %>%
+  group_by(ID) %>%
+  summarise(across(c(PlasticBottles, Polystyrene, CigaretteButts, GlassBottles, PlasticBags, Wrappers, SportsBalls), sum))
+
+# Melt for plotting
+trash_by_wheel_melted <- melt(trash_by_wheel, id.vars = "ID")
+
+# Plot the types of trash collected by each Trash Wheel
+ggplot(trash_by_wheel_melted, aes(x = ID, y = value, fill = variable)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  xlab("Trash Wheel") + ylab("Total Collected") +
+  ggtitle("Trash Collected by Each Trash Wheel") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_continuous(labels = scales::comma)
+
+# Aggregate trash by month
+trash_by_month <- trashwheel %>%
+  group_by(Month) %>%
+  summarise(TotalTrash = sum(Weight, na.rm = TRUE))
+
+# Plot trash collected by month
+ggplot(trash_by_month, aes(x = Month, y = TotalTrash, group = 1)) + # Added 'group = 1' for continuity
+  geom_line() + geom_point() +
+  xlab("Month") + ylab("Total Trash Collected (Weight)") +
+  ggtitle("Monthly Trash Collection") +
+  scale_y_continuous(labels = scales::comma)
