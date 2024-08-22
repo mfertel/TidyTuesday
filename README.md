@@ -6,6 +6,6 @@
 
 ## Goals of TidyTuesday
 
-- The goal if TidyTuesday is to make learning data analysis skills easier by working with real-world datasets. 
+- The goal of TidyTuesday is to make learning data analysis skills easier by working with real-world datasets. 
 - Participants are encouraged to explore the data and search for interesting relationships, while practicing their data tidying and plotting techniques.
 - As a result, a visualization, a model, or some other peice of output using R (or another language) should be created. 
